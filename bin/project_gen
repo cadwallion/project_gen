@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'optparse'
+require 'project_gen'
+
+options = {
+  rvm: false,
+  directory: ENV['PROJECTS']
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: new_project NAME [subdirectory] [options]"
+
+  opts.on('--rvm VERSION', 'Adds RVM support with .rvmrc to specified ruby version') do |ver|
+    options[:rvm] = true
+    options[:rvm_version] = ver
+  end
+
+  opts.on('--type [TYPE]', [:gem, :pip], 'Specifies project type (Ruby gem, Python package, etc) and fires off library helpers') do |type|
+    options[:type] = type
+  end
+
+  opts.on('--directory DIR', 'Overrides the $PROJECTS variable used to determine where the project will be created') do |dir|
+    options[:directory] = File.expand_path(dir)
+  end
+
+  opts.on_tail("-h", "--help", "Show this message") do
+    puts opts
+    exit
+  end
+end.parse!
+
+if !ARGV[0]
+  puts "Project name must be specified."
+  exit
+end
+
+ProjectGen::CLI.new(ARGV, options).generate
